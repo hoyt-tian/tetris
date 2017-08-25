@@ -9,7 +9,7 @@ var cleanup = require('clean-webpack-plugin');
 var cpy = require('copy-webpack-plugin');
 
 module.exports = {
-    entry:'./src/hello.jsx',
+    entry:'./src/game.jsx',
     devtool: 'source-map',
     output:{
         path:path.resolve(__dirname,'dist'),
@@ -29,9 +29,19 @@ module.exports = {
         {
             test   : /\.json$/,
             loader : 'json'
+        },
+        {
+            test: /\.scss$/,
+            use: [{
+                loader: "style-loader" // creates style nodes from JS strings
+            }, {
+                loader: "css-loader" // translates CSS into CommonJS
+            }, {
+                loader: "sass-loader" // compiles Sass to CSS
+            }]
         }
-
         ]
+        
     },
     plugins:[
     new cleanup(['dist'],{

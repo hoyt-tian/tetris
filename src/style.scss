@@ -1,0 +1,12 @@
+.tetris{
+    font-size: 1rem;
+
+    &>canvas, &>section{
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    &>section{
+        margin-left: 1vw;
+    }
+}
