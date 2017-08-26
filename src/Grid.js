@@ -190,18 +190,20 @@ class Grid extends React.Component{
     componentDidUpdate(){
         let context = this.refs.canvas.getContext('2d');
         context.clearRect(0, 0, this.refs.canvas.width, this.refs.canvas.height);
-        if(!(this.state.data && this.state.data.length && this.state.data[0].length)){
-            return;
-        }
+        
         let tile = null;
-        for(let row = 0; row < this.state.data.length; row++){
-            for(let col=0; col < this.state.data[row].length; col++){
-                tile = this.state.data[row][col];
-                if(tile == null) continue;
-                context.fillStyle = tile.color;
-                context.fillRect(col * TileWidth, row * TileHeight , TileWidth -  TilePadding, TileHeight - TilePadding);
+
+        if(this.state.data && this.state.data.length && this.state.data[0].length){
+            for(let row = 0; row < this.state.data.length; row++){
+                for(let col=0; col < this.state.data[row].length; col++){
+                    tile = this.state.data[row][col];
+                    if(tile == null) continue;
+                    context.fillStyle = tile.color;
+                    context.fillRect(col * TileWidth, row * TileHeight , TileWidth -  TilePadding, TileHeight - TilePadding);
+                }
             }
         }
+        
 
         if(this.state.active){
             context.fillStyle = ColorPicker.activeColor();

@@ -24,14 +24,22 @@ class Game extends React.Component{
         this.state = {
             total:0,
             score: 0,
-            data: buildMatrix(this.rows, this.cols, null),
-            active: Tetris.random(),
-            next: buildMatrix(5, 5, null),
-            preview:random(5, 5)
+            data: buildMatrix(this.rows, this.cols, null)
         };
 
         this.timer_input = null;
         this.interval_input = 500;
+    }
+
+    setPreviewPosition(tetris){
+        tetris.setPos( (this.refs.preview.props.rows -  tetris.height())>>1 
+                        , (this.refs.preview.props.cols - tetris.width())>>1 );
+        return tetris;
+    }
+
+    setNewTertrisPosition(tetris){
+        tetris.setPos(0,  (this.refs.main.props.cols - tetris.width()) >> 1);
+        return tetris;
     }
 
     render(){
@@ -59,10 +67,22 @@ class Game extends React.Component{
     componentDidMount(){
         // let data = random(20, 15);
         // this.refs.main.setState({data:data});
-        this.refs.preview.setState({data:this.state.preview});
+
+        let active = this.setNewTertrisPosition(Tetris.random());
+        let next = this.setPreviewPosition(Tetris.random());
+
+        this.setState({
+            active: active,
+            next: next
+        });
+
+        this.refs.preview.setState({
+            active:next
+        });
+
         this.refs.main.setState({
             data:this.state.data,
-            active: this.state.active
+            active: active
         });
         this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
         document.onkeydown = this.keydown.bind(this);
@@ -71,7 +91,7 @@ class Game extends React.Component{
     keydown(event){
         switch(event.keyCode){
             case 0x25: //left
-                this.state.active.col--;
+                this.moveActiveLeft();
                 break;
             case 0x27: // right
                 this.state.active.col++;
@@ -88,12 +108,55 @@ class Game extends React.Component{
         });
     }
 
+    moveActiveLeft(){
+        if(this.state.active.col>0){
+            this.state.active.col--;
+            return true;
+        } 
+        return false;
+    }
+
+    moveActiveRight(){
+        if(this.state.active.col<=this.cols-2){
+            this.state.active.col++;
+            return true;
+        } 
+        return false;
+    }
+
+    moveActiveDown(){
+        let bottom = this.state.active.row + this.state.active.height() + 1;
+
+        if(bottom < this.rows){
+            
+            for(let i=0; i < this.state.active.width(); i++){
+                if( this.state.data[bottom][this.state.active.col + i] != "" ){
+                    return false;
+                }
+            }
+
+            this.state.active.row++;
+            return true;
+        }else{
+            return false;
+        }
+        
+    }
+
+    
+
     autoDrop(){
-        this.state.active.row++;
-        this.refs.main.setState({
-            data:this.state.data,
-            active: this.state.active
-        });
+        let r = this.moveActiveDown();
+
+        if( r ){
+            this.refs.main.setState({
+                data:this.state.data,
+                active: this.state.active
+            });
+        }else{
+            // 
+        }
+        
         this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
     }
 
