@@ -6,6 +6,12 @@
         vertical-align: middle;
     }
 
+    canvas{
+        border:1px solid #000000;
+        box-shadow: #334466 0.5px 0.5px;
+        padding:3px 3px 0px 3px;
+    }
+
     &>section{
         margin-left: 1vw;
     }
