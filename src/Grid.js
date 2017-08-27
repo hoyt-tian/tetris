@@ -159,7 +159,9 @@ class Tetris{
         return ndata;      
     }
 
-    turn(clockwise){
+    turn(clockwise, rows, cols){
+        if(this.col + this.height() >= cols  || this.row+this.width() >= rows) return null;
+
         let ndata = clockwise?this.clockwise():this.anticlockwise();
         let result = {
             before:this.data,
@@ -217,10 +219,6 @@ class Grid extends React.Component{
                 }
             }
         }
-    }
-
-    static merge(tetris){
-
     }
 }
 

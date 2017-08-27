@@ -1,6 +1,13 @@
 .tetris{
     font-size: 1rem;
 
+    a{
+        text-decoration: none;
+        &:hover,&:active{
+            color:#334466;
+        }
+    }
+
     &>canvas, &>section{
         display: inline-block;
         vertical-align: middle;
@@ -14,5 +21,17 @@
 
     &>section{
         margin-left: 1vw;
+        &>section.links{
+            li{
+                cursor: pointer;
+            }
+            li.selected{
+                font-size: 1.1rem;
+                font-weight: bold;
+                list-style-type: circle;
+            }
+        }
     }
+
+    
 }

@@ -1,6 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import Grid,{Tile, Tetris, buildMatrix} from './Grid';
+import AI from './Ai';
 import './style.scss';
 
 function random(rows, cols){
@@ -31,6 +31,12 @@ class Game extends React.Component{
         this.interval_input = 500;
 
         this.enableKeyboard = true;
+        this.useAI = false;
+        this.interval_ai = 50;
+        this.ai = new AI( Math.random(), -1*Math.random(), -1*Math.random(), -1*Math.random() );
+        this.aiActions = [];
+
+        this.mode.bind(this);
     }
 
     setPreviewPosition(tetris){
@@ -59,8 +65,18 @@ class Game extends React.Component{
                             <tr>
                                 <td>Score</td><td>{this.state.score}</td>
                             </tr>
+                            <tr>
+                                <td><input type="radio" disabled={this.props.disableMode} checked={!this.useAI} value="false" onChange={(e)=>{e.target.blur();this.automation(e.target.value==="true")}} />人工控制</td><td><input type="radio" disabled={this.props.disableMode} value="true" checked={this.useAI}  onChange={(e)=>{e.target.blur();this.automation(e.target.value==="true")}} />AI控制</td>
+                            </tr>
                         </tbody>
                     </table>
+                </section>
+                <section className="links">
+                    <ul>
+                        <li className={window.location.pathname==="/"||window.location.pathname==="/index.html"?"selected":""}><a href="index.html">Tetris</a></li>
+                        <li className={window.location.pathname==="/test.html"?"selected":""}><a href="test.html">单元测试</a></li>
+                        <li className={window.location.pathname==="/evolution.html"?"selected":""}><a href="evolution.html">AI训练</a></li>
+                    </ul>
                 </section>
             </section>
         </div>);
@@ -71,10 +87,59 @@ class Game extends React.Component{
         this.dropNew();
     }
 
+    doAction(keyCode){
+        let r = null;
+        switch(keyCode){
+            case 0x25: //left
+                this.moveActiveLeft();
+                break;
+            case 0x27: // right
+                this.moveActiveRight();
+                break;
+            case 0x20: // speed up
+                r = this.moveActiveDown();
+                if(r == null){
+                    return this.gameover();
+                }else if(r === false){
+                    this.merge(this.state.active);
+                    this.state.score += this.clear();
+                    this.state.total++;
+                    this.dropNew();
+                }
+                break;
+            case 0x26: // up
+                r = this.state.active.turn(false, this.rows, this.cols);
+                if(r && Game.testCollsion(this.state.data, this.state.active)){
+                    this.state.active.turn(true, this.rows, this.cols);
+                }
+                break;
+            case 0x28: // down
+                r = this.state.active.turn(true, this.rows, this.cols);
+                if(r && Game.testCollsion(this.state.data, this.state.active)){
+                    this.state.active.turn(false, this.rows, this.cols);
+                }
+                break;
+        }
+
+        this.setState({
+            data:this.state.data,
+            active: this.state.active,
+            total: this.state.total,
+            score: this.state.score
+        });
+        this.refs.main.setState({
+            data: this.state.data,
+            active: this.state.active
+        });
+        this.refs.preview.setState({
+            active: this.state.next
+        });
+    }
+
     keydown(event){
-        
-        if(!this.enableKeyboard) return;
+        if(!this.enableKeyboard || this.useAI) return;
         this.enableKeyboard = false;
+
         switch(event.keyCode){
             case 0x25:
             case 0x27:
@@ -92,48 +157,10 @@ class Game extends React.Component{
                 return;
         }
 
-        switch(event.keyCode){
-            case 0x25: //left
-                this.moveActiveLeft();
-                break;
-            case 0x27: // right
-                this.moveActiveRight();
-                break;
-            case 0x20: // speed up
-                let r = this.moveActiveDown();
-                if(r == null){
-                    this.gameover();
-                }else if(r === false){
-                    this.merge(this.state.active);
-                    this.state.score += this.clear();
-                    this.state.total++;
-                    this.dropNew();
-                }
-                break;
-            case 0x26: // up
-                this.state.active.turn(false);
-                if(Game.testCollsion(this.state.data, this.state.active)){
-                    this.state.active.turn(true);
-                }
-                break;
-            case 0x28: // down
-                this.state.active.turn(true);
-                if(Game.testCollsion(this.state.data, this.state.active)){
-                    this.state.active.turn(false);
-                }
-                break;
-        }
-
-        this.setState({
-            data:this.state.data,
-            active: this.state.active,
-            total: this.state.total,
-            score: this.state.score
-        });
-        if(this.timer_input == null){
-            this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
-        }
+        this.doAction(event.keyCode);
         this.enableKeyboard = true;
+        if(this.timer_input == null) this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+
     }
 
     moveActiveLeft(){ 
@@ -162,14 +189,12 @@ class Game extends React.Component{
 
     moveActiveDown(){
         let bottom = this.state.active.row + this.state.active.height();
-
         if(bottom < this.rows){
             this.state.active.row++;
-
             if(Game.testCollsion(this.state.data, this.state.active)){
                 this.state.active.row--;
-                if(this.state.active.row ==0 ){
-                    return this.gameover();
+                if( Game.testCollsion(this.state.data, this.state.active) ){
+                    return null;
                 }
                 return false;
             }
@@ -205,15 +230,14 @@ class Game extends React.Component{
             active: active
         });
 
-        this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+        if(this.useAI){
+            if(this.timer_ai==null) this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
+        }else{
+            if(this.timer_input == null) this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+        }
     }
 
-    isFullLine(line){
-        for(let i=0; i<this.cols; i++){
-            if(this.state.data[line][i] == null) return false;
-        }
-        return true;
-    }
+
 
     clearLine(line){
 
@@ -229,7 +253,7 @@ class Game extends React.Component{
     clear(){
         let count = 0;
         for(let i=0; i<this.state.active.height(); i++){
-            if(this.isFullLine(i+this.state.active.row)){
+            if(AI.isFullLine(this.state.data, i+this.state.active.row, this.cols)){
                 count++;
                 this.clearLine(i+this.state.active.row);
             }
@@ -238,6 +262,9 @@ class Game extends React.Component{
     }
 
     merge(tetris){
+        if(tetris.height()+tetris.row > this.state.data.length){
+            return;
+        }
         for(let i=0; i<tetris.height(); i++){
             for(let j=0; j<tetris.width(); j++){
                 if(this.state.data[i+tetris.row][tetris.col+j] == null) this.state.data[i+tetris.row][tetris.col+j] = tetris.getTile(i, j);
@@ -248,7 +275,7 @@ class Game extends React.Component{
     static testCollsion(matrix, tetris){
         for(let row = 0; row < tetris.height(); row++){
             for(let col = 0; col < tetris.width(); col++){
-                if( (tetris.row + row > matrix.length ) || (tetris.col + col > matrix[0].length) || (matrix[tetris.row + row][tetris.col + col] !== null && tetris.getTile( row, col) !== null)){
+                if( (tetris.row + row >= matrix.length ) || (tetris.col + col >= matrix[0].length) || (matrix[tetris.row + row][tetris.col + col] !== null && tetris.getTile( row, col) !== null)){
                     return true;
                 }
             }
@@ -256,10 +283,97 @@ class Game extends React.Component{
         return false;
     }
 
+    cleanUp(){
+        this.state = {
+            total:0,
+            score: 0,
+            data: buildMatrix(this.rows, this.cols, null),
+            next:null,
+            active:null
+        };
+    }
+
     gameover(){
-        // window.alert('game over');
+        if(this.timer_ai) window.clearTimeout(this.timer_ai);
+        if(this.timer_input) window.clearTimeout(this.timer_input);
+        this.timer_ai = this.timer_input = null;
+
+        
+        if(this.state.total > this.weights.total && this.state.score > this.weights.score){
+            this.weights = {
+                ai: this.ai,
+                total: this.state.total,
+                score: this.state.score
+            };
+            console.log('New weights found score:'+this.state.score+", total:"+this.state.total+", ai:("+this.ai.alpha+","+this.ai.beta+","+this.ai.gama+","+this.ai.delta+")");
+        }
+        this.cleanUp();
+        let quantity = Math.random() * 0.4 - 0.2;
+        switch( parseInt(Math.random()*4) ){
+            case 0:
+                this.ai.alpha += quantity;
+                break;
+            case 1:
+                this.ai.beta += quantity;
+                break;
+            case 2:
+                this.ai.gama += quantity;
+                break;
+            case 3:
+                this.ai.delta += quantity;
+                break;
+        }
+        this.dropNew();
+    }
+
+    aiStep(){
+        this.timer_ai = null;
+        if(this.aiActions.length===0){
+            this.aiActions = this.ai.think(this);
+        }
+
+        if(this.aiActions.length){
+            let actions = [this.aiActions.shift()];
+
+            if(this.aiActions.length && actions[0] != 0x20 && this.aiActions[this.aiActions.length-1] == 0x20 ){
+                actions.push(this.aiActions.pop());
+            }
+            for(let i=0; i<actions.length; i++){
+                this.doAction(actions[i]);
+            }
+        }
+        
+        if(this.aiActions.length > 0){
+            this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
+        }else{
+            this.doAction(0x20);
+        }
+        
+    }
+
+    automation(status){
+       this.useAI = status;
+       this.enableKeyboard = !status;
+       if(status){
+            if(this.timer_input){
+                window.clearTimeout(this.timer_input);
+                this.timer_input = null;
+            }
+            this.aiStep();
+       }else{
+           if(this.timer_ai){
+               window.clearTimeout(this.timer_ai);
+               this.timer_ai = 0;
+           }
+           this.autoDrop();
+       }
+    }
+
+    mode(event){
+        this.automation(event.target.value==="true");
     }
 }
 
-let game = ReactDOM.render(<Game />, document.body);
+export default Game;
+
 

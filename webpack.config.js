@@ -9,11 +9,15 @@ var cleanup = require('clean-webpack-plugin');
 var cpy = require('copy-webpack-plugin');
 
 module.exports = {
-    entry:'./src/game.jsx',
+    entry:{
+        index:'./src/index.js',
+        evolution:'./src/evolution.jsx',
+        test:'./test/index.js',
+    },
     devtool: 'source-map',
     output:{
         path:path.resolve(__dirname,'dist'),
-        filename:'index.[hash].js'
+        filename:'[name].[hash].js'
     },
     module: {
        
@@ -54,9 +58,28 @@ module.exports = {
     }),
     new html({
         inject: true,
-        title:'',
-        template:'src/index.ejs'
-    })
+        title:'Mocha Test',
+        filename:"test.html",
+        template:'test-html/index.ejs',
+        chunks:["test"]
+    }),
+    new html({
+        inject: true,
+        title:'React Tetris',
+        template:'src/index.ejs',
+        chunks:["index"]
+    }),
+    new html({
+        inject: true,
+        title:'AI Training',
+        filename:"evolution.html",
+        template:'src/index.ejs',
+        chunks:["evolution"]
+    }),
+    new cpy([{
+       from:'./test-html/mocha.*',
+       to:'./mocha.[ext]' 
+    }])
     ]
     
 }
