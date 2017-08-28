@@ -4,8 +4,6 @@
   "description": "tetris implements by react",
   "main": "index.js",
   "scripts": {
-    "test-compile": "webpack --config webpack.debug.js",
-    "test": "webpack-dev-server --config webpack.debug.js --hot --inline --content-base  ./dist",
     "dev": "webpack-dev-server --hot --inline --content-base  ./dist"
   },
   "author": "",

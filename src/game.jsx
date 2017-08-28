@@ -36,7 +36,6 @@ class Game extends React.Component{
         this.ai = new AI( Math.random(), -1*Math.random(), -1*Math.random(), -1*Math.random() );
         this.aiActions = [];
 
-        this.mode.bind(this);
     }
 
     setPreviewPosition(tetris){
@@ -297,33 +296,11 @@ class Game extends React.Component{
         if(this.timer_ai) window.clearTimeout(this.timer_ai);
         if(this.timer_input) window.clearTimeout(this.timer_input);
         this.timer_ai = this.timer_input = null;
-
-        
-        if(this.state.total > this.weights.total && this.state.score > this.weights.score){
-            this.weights = {
-                ai: this.ai,
-                total: this.state.total,
-                score: this.state.score
-            };
-            console.log('New weights found score:'+this.state.score+", total:"+this.state.total+", ai:("+this.ai.alpha+","+this.ai.beta+","+this.ai.gama+","+this.ai.delta+")");
-        }
+        let state = this.state;
         this.cleanUp();
-        let quantity = Math.random() * 0.4 - 0.2;
-        switch( parseInt(Math.random()*4) ){
-            case 0:
-                this.ai.alpha += quantity;
-                break;
-            case 1:
-                this.ai.beta += quantity;
-                break;
-            case 2:
-                this.ai.gama += quantity;
-                break;
-            case 3:
-                this.ai.delta += quantity;
-                break;
+        if(this.props.onGameOver){
+            this.props.onGameOver.call(this, state);
         }
-        this.dropNew();
     }
 
     aiStep(){
@@ -369,9 +346,6 @@ class Game extends React.Component{
        }
     }
 
-    mode(event){
-        this.automation(event.target.value==="true");
-    }
 }
 
 export default Game;
