@@ -26,13 +26,22 @@ class AI{
     }
 
     static holeCount(matrix, col, rows){
+        let top = rows;
+        for(let i=0; i<rows; i++){
+            if(matrix[i][col] != null){
+                top = i;
+                break;
+            }
+        }
+
         let count = 0;
-        for(let i=rows-1; i > 0 ; i--){
-            if( (matrix[i][col]==null && matrix[i-1][col]) || (matrix[i][col]==null && matrix[i-1][col]) ){
+        for(let i=top; i<rows; i++){
+            if(matrix[i][col] == null){
                 count++;
             }
         }
-        return count?count-1:0;
+
+        return count;
     }
 
     static score(matrix, game){
@@ -43,7 +52,7 @@ class AI{
         let delta = 0;
         for(let i=0; i<game.cols; i++){
             let height = AI.colHeight(matrix, i, game.rows) - fulllines;
-            if(last){
+            if(last!=null){
                 delta += Math.abs(height - last);
             }
             last = height;
@@ -85,7 +94,8 @@ class AI{
                     score: score,
                     turn: i,
                     row:tetris.row,
-                    col:tetris.col
+                    col:tetris.col,
+                    data:game.state.data
                 });
                 
                 
@@ -170,7 +180,7 @@ class AI{
 
     compare($this){
         return (score1, score2)=>{
-            return AI.caculate(score1, $this) < AI.caculate(score2, $this);
+            return AI.caculate(score2, $this) > AI.caculate(score1, $this);
         };
     }
 
