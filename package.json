@@ -1,12 +1,12 @@
 {
   "name": "react-tetris",
   "version": "0.0.1",
-  "description": "tetris implements by react",
+  "description": "tetris implements by react, https://github.com/hoyt-tian/tetirs",
   "main": "index.js",
   "scripts": {
     "dev": "webpack-dev-server --hot --inline --content-base  ./dist"
   },
-  "author": "",
+  "author": "hao tian, http://www.hoyt-tian.com/",
   "license": "ISC",
   "devDependencies": {
     "babel": "^6.23.0",
