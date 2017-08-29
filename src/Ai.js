@@ -94,8 +94,7 @@ class AI{
                     state: state,
                     turn: i,
                     row:tetris.row,
-                    col:tetris.col,
-                    matrix:game.state.data
+                    col:tetris.col
                 });
                 
                 
@@ -119,8 +118,7 @@ class AI{
                     state: state,
                     turn: i,
                     row:tetris.row,
-                    col:tetris.col,
-                    matrix:game.state.data                    
+                    col:tetris.col                   
                 });
                 
                 

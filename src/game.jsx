@@ -32,7 +32,7 @@ class Game extends React.Component{
 
         this.enableKeyboard = true;
         this.useAI = props.aiSeed!=null;
-        this.interval_ai = 50;
+        this.interval_ai = props.aiInterval || 200;
         let aiSeed = props.aiSeed || {
             alpha:Math.random(), 
             beta:Math.random(), 
@@ -114,6 +114,22 @@ class Game extends React.Component{
                     this.state.score += this.clear();
                     this.state.total++;
                     this.dropNew();
+                }else if(r && this.useAI){
+                    this.setState({
+                        data:this.state.data,
+                        active: this.state.active,
+                        total: this.state.total,
+                        score: this.state.score
+                    });
+                    this.refs.main.setState({
+                        data: this.state.data,
+                        active: this.state.active
+                    });
+                    this.refs.preview.setState({
+                        active: this.state.next
+                    });
+                    window.setTimeout( this.aiStep.bind(this), this.interval_ai);
+                    return;
                 }
                 break;
             case 0x26: // up
@@ -243,9 +259,16 @@ class Game extends React.Component{
 
         
         if(this.useAI){
-            if(this.timer_ai==null) this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
+            if(this.timer_ai==null){
+                this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
+                console.log('ai take a rest and will work after interval');
+            }else{
+                console.log('wait ai timer, will not create new timer');
+            }
         }else{
-            if(this.timer_input == null) this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+            if(this.timer_input == null){
+                this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+            } 
         }
 
         
@@ -320,8 +343,7 @@ class Game extends React.Component{
     }
 
     aiStep(){
-        if(this.status<1) return;
-        
+        if(this.timer_ai) window.clearTimeout(this.timer_ai);
         this.timer_ai = null;
         if(this.aiActions.length===0){
             this.aiActions = this.ai.think(this);

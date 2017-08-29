@@ -192,7 +192,7 @@ let GACallback = (ga)=>{
 
 let ga = ReactDOM.render(<GA capacity={1000} />, document.getElementById('Training'));
 
-let game = ReactDOM.render(<Game disableMode={true} onGameOver = {GACallback(ga)} aiSeed={ga.next()}  />, 
+let game = ReactDOM.render(<Game  disableMode={true} onGameOver = {GACallback(ga)} aiSeed={ga.next()} aiInterval={10} />, 
     document.getElementById('GameContainer'));
 
 
