@@ -17,27 +17,46 @@ class GA extends React.Component{
     constructor(props){
         super(props);
 
-        let capacity = props.capacity || 10;
         this.seeds = [];
 
-        for(let a=-capacity; a<capacity; a++){
-            for(let b = -capacity; b<capacity; b++){
-                for(let c = -capacity; c<capacity; c++){
-                    for(let d = -capacity; d<capacity; d++){
-                        this.seeds.push(GA.normalize({
-                            alpha:a,
-                            beta: b,
-                            gama: c,
-                            delta: d,
-                            fitness: 0
-                        }));
+        if(props.capacity){
+            this.seeds.length = props.capacity;
+
+            for(let i=0; i<this.seeds.length; i++){
+                this.seeds[i] = {
+                    alpha: Math.random()*0.4 - 0.2,
+                    beta: Math.random()*0.4 - 0.2,
+                    gama: Math.random()*0.4 - 0.2,
+                    delta: Math.random()*0.4 - 0.2,
+                    fitness: Number.NEGATIVE_INFINITY
+                };
+            }
+        }else{
+            let alpha = props.a || 2;
+            let beta = props.b || 2;
+            let gama = props.c || 2;
+            let delta = props.d || 2;
+
+            for(let a=-alpha; a<alpha; a++){
+                for(let b = -beta; b<beta; b++){
+                    for(let c = -gama; c<gama; c++){
+                        for(let d = -delta; d<delta; d++){
+                            this.seeds.push(GA.normalize({
+                                alpha:a,
+                                beta: b,
+                                gama: c,
+                                delta: d,
+                                fitness: Number.NEGATIVE_INFINITY
+                            }));
+                        }
                     }
                 }
             }
         }
+        
             
         this.state = {
-            capacity:this.capacity,
+            capacity:this.seeds.length,
             index:0,
             etime:0,
             max : {
@@ -69,17 +88,19 @@ class GA extends React.Component{
     }
 
     static crossOver(seed1, seed2){
+        let a1 = seed1.fitness/(seed1.fitness + seed2.fitness);
+        let a2 = seed2.fitness/(seed1.fitness + seed2.fitness);
         let newborn = {
-            alpha: seed1.fitness * seed1.alpha + seed2.fitness * seed2.alpha,
-            beta: seed1.fitness * seed1.beta + seed2.fitness * seed2.beta,
-            gama: seed1.fitness * seed1.gama + seed2.fitness * seed2.gama,
-            delta: seed1.fitness * seed.delta + seed2.fitness * seed2.delta
+            alpha: a1 * seed1.alpha + a2 * seed2.alpha,
+            beta: a1 * seed1.beta + a2 * seed2.beta,
+            gama: a1 * seed1.gama + a2 * seed2.gama,
+            delta: a1 * seed1.delta + a2 * seed2.delta
         };
-        return GA.normalize(newborn);
+        return newborn;
     }
 
     mutate(seed){
-        let d = Math.random() * 0.4 - 0.2;
+        let d = Math.random() - 0.5;
         let r = parseInt(Math.random() * 4);
         switch(r){
             case 0:
@@ -95,7 +116,7 @@ class GA extends React.Component{
                 seed.delta += d;
                 break;
         }
-        return normalize(seed);
+        return seed;
     }
 
     evolution(){
@@ -169,9 +190,9 @@ let GACallback = (ga)=>{
     };
 };
 
-let ga = ReactDOM.render(<GA capacity={2} />, document.getElementById('Training'));
+let ga = ReactDOM.render(<GA capacity={1000} />, document.getElementById('Training'));
 
-let game = ReactDOM.render(<Game disableMode={true} onGameOver = {GACallback(ga)} ai={true} />, 
+let game = ReactDOM.render(<Game disableMode={true} onGameOver = {GACallback(ga)} aiSeed={ga.next()}  />, 
     document.getElementById('GameContainer'));
 
 

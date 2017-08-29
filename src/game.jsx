@@ -31,9 +31,18 @@ class Game extends React.Component{
         this.interval_input = 500;
 
         this.enableKeyboard = true;
-        this.useAI = props.ai || false;
+        this.useAI = props.aiSeed!=null;
         this.interval_ai = 50;
-        this.ai = new AI( Math.random(), -1*Math.random(), -1*Math.random(), -1*Math.random() );
+        let aiSeed = props.aiSeed || {
+            alpha:Math.random(), 
+            beta:Math.random(), 
+            gama:Math.random(), 
+            delta:Math.random()
+        };
+        
+        this.ai = new AI(aiSeed.alpha, aiSeed.beta, aiSeed.gama, aiSeed.delta);
+        if(props.aiSeed) this.ai.seed = props.aiSeed;
+        
         this.aiActions = [];
         this.status = 0;  // 0: pause, 1: running, -1: game over
     }
@@ -318,17 +327,12 @@ class Game extends React.Component{
             this.aiActions = this.ai.think(this);
         }
 
-        if(this.aiActions.length){
-            let actions = [this.aiActions.shift()];
-
-            if(this.aiActions.length && actions[0] != 0x20 && this.aiActions[this.aiActions.length-1] == 0x20 ){
-                actions.push(this.aiActions.pop());
-            }
-            for(let i=0; i<actions.length; i++){
-                this.doAction(actions[i]);
-            }
+        let step = this.aiActions.shift();
+        if(step && step.code){
+            this.doAction(step.code);
         }
         
+
         if(this.aiActions.length > 0){
             this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
         }else{

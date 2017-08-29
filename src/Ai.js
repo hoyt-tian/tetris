@@ -44,7 +44,7 @@ class AI{
         return count;
     }
 
-    static score(matrix, game){
+    static state(matrix, game){
         let fulllines = AI.fullLineCount(matrix, game);
         let avgHeight = 0;
 
@@ -89,13 +89,13 @@ class AI{
                     ;
                 }
                 game.merge(tetris);
-                let score = AI.score(game.state.data, game);
+                let state = AI.state(game.state.data, game);
                 result.push({
-                    score: score,
+                    state: state,
                     turn: i,
                     row:tetris.row,
                     col:tetris.col,
-                    data:game.state.data
+                    matrix:game.state.data
                 });
                 
                 
@@ -114,12 +114,13 @@ class AI{
                 }
 
                 game.merge(tetris);
-                let score = AI.score(game.state.data, game);
+                let state = AI.state(game.state.data, game);
                 result.push({
-                    score: score,
+                    state: state,
                     turn: i,
                     row:tetris.row,
-                    col:tetris.col
+                    col:tetris.col,
+                    matrix:game.state.data                    
                 });
                 
                 
@@ -130,7 +131,7 @@ class AI{
             }
 
             tetris.setPos(origin.row, origin.col);
-            tetris.turn();
+            tetris.turn(true);
         }
         tetris.setPos(origin.row, origin.col);
         game.state.data = origin.matrix;
@@ -138,9 +139,14 @@ class AI{
     }
 
     actions(result, tetris, game){
-        result.sort(this.compare(this));
 
         if(result.length<=0) return [];
+
+        result.forEach((item)=>{
+            item.score = AI.caculate(item.state, game.ai);
+        });
+
+        result.sort((a,b)=>{ return b.score - a.score; });
 
         let target = result[0];
         let steps = [];
@@ -148,40 +154,34 @@ class AI{
             case 0:
                 break;
             case 1:
-                steps.push(0x26);
+                steps.push({code:0x28,desc:"TR"});
                 break;
             case 2:
-                steps.push(0x26);
-                steps.push(0x26);
+                steps.push({code:0x28,desc:"TR"});
+                steps.push({code:0x28,desc:"TR"});
                 break;
             case 3:
-                steps.push(0x28);
+                steps.push({code:0x26,desc:"TL"});
                 break;
         }
         if(tetris.col < target.col){
             for(let i=tetris.col; i<target.col; i++){
-                steps.push(0x25);
+                steps.push({code:0x27,desc:"MR"});                
             }
         }else if(tetris.col > target.col){
             for(let i=target.col; i<tetris.col; i++){
-                steps.push(0x27);
+                steps.push({code:0x25,desc:"ML"});                
             }
         }
 
         for(let i=tetris.row; i<target.row; i++){
-            steps.push(0x20);
+            steps.push({code:0x20,desc:"MD"});            
         }
         return steps;
     }
 
-    static caculate(score, ai){
-        return score.clear * ai.alpha + score.avgh * ai.beta + score.hc * ai.gama + ai.delta * score.delta;
-    }
-
-    compare($this){
-        return (score1, score2)=>{
-            return AI.caculate(score2, $this) > AI.caculate(score1, $this);
-        };
+    static caculate(state, ai){
+        return state.clear * ai.alpha + state.avgh * ai.beta + state.hc * ai.gama + ai.delta * state.delta;
     }
 
     static isFullLine(matrix, line, cols){
