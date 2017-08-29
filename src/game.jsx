@@ -86,6 +86,12 @@ class Game extends React.Component{
                         <li className={window.location.pathname==="/evolution.html"?"selected":""}><a href="evolution.html">AI训练</a></li>
                     </ul>
                 </section>
+                <section>
+                    <p>操作说明:空格键加速，方向键左、右控制平移动，上下键控制变形</p>
+                    <p>训练模式下不能切换操作模式，全程AI控制</p>
+                    <p>Github地址: <a href="https://github.com/hoyt-tian/tetirs" target="_blank">https://github.com/hoyt-tian/tetirs</a></p>
+                    <p>更多说明: <a href="http://www.hoyt-tian.com/tag/tetris/" target="_blank">http://www.hoyt-tian.com/tag/tetris</a></p>
+                </section>
             </section>
         </div>);
     }
