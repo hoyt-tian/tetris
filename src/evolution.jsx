@@ -59,6 +59,7 @@ class GA extends React.Component{
             capacity:this.seeds.length,
             index:0,
             etime:0,
+            current:this.seeds[0],
             max : {
                 fitness:0
             }
@@ -81,7 +82,12 @@ class GA extends React.Component{
                     <tr><td>beta</td><td>{this.state.max.beta}</td></tr>
                     <tr><td>gama</td><td>{this.state.max.gama}</td></tr>
                     <tr><td>delta</td><td>{this.state.max.delta}</td></tr>
-                    <tr><td>初始种群大小</td><td>{this.capacity}</td></tr>
+                </tbody>
+                <tbody>
+                    <tr><td>当前alpha</td><td>{this.state.current.alpha}</td></tr>
+                    <tr><td>当前beta</td><td>{this.state.current.beta}</td></tr>
+                    <tr><td>当前gama</td><td>{this.state.current.gama}</td></tr>
+                    <tr><td>当前delta</td><td>{this.state.current.delta}</td></tr>
                 </tbody>
             </table>
         </section>);
@@ -148,6 +154,7 @@ class GA extends React.Component{
         if(this.state.index == this.seeds.length){
             this.state.etime++;
             this.setState({
+                current:seed,
                 index: 0,
                 etime: this.state.etime
             })
@@ -155,7 +162,7 @@ class GA extends React.Component{
                 return false;
             }
         }else{
-            this.setState({index: this.state.index});
+            this.setState({index: this.state.index, current:seed});
         }
         return seed;
     }
