@@ -267,9 +267,6 @@ class Game extends React.Component{
         if(this.useAI){
             if(this.timer_ai==null){
                 this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
-                console.log('ai take a rest and will work after interval');
-            }else{
-                console.log('wait ai timer, will not create new timer');
             }
         }else{
             if(this.timer_input == null){
