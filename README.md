@@ -1,4 +1,4 @@
-# tetirs in React
+# tetris in React
 
 使用 React 实现的俄罗斯方块，主要包含以下功能：
 
