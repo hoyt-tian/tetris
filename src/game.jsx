@@ -31,12 +31,20 @@ class Game extends React.Component{
         this.interval_input = 500;
 
         this.enableKeyboard = true;
-        this.useAI = false;
-        this.interval_ai = 50;
-        this.ai = new AI( Math.random(), -1*Math.random(), -1*Math.random(), -1*Math.random() );
+        this.useAI = props.aiSeed!=null;
+        this.interval_ai = props.aiInterval || 200;
+        let aiSeed = props.aiSeed || {
+            alpha:Math.random(), 
+            beta:Math.random(), 
+            gama:Math.random(), 
+            delta:Math.random()
+        };
+        
+        this.ai = new AI(aiSeed.alpha, aiSeed.beta, aiSeed.gama, aiSeed.delta);
+        if(props.aiSeed) this.ai.seed = props.aiSeed;
+        
         this.aiActions = [];
-
-        this.mode.bind(this);
+        this.status = 0;  // 0: pause, 1: running, -1: game over
     }
 
     setPreviewPosition(tetris){
@@ -84,6 +92,7 @@ class Game extends React.Component{
 
     componentDidMount(){
         document.onkeydown = this.keydown.bind(this);
+        this.status = 1;
         this.dropNew();
     }
 
@@ -105,6 +114,22 @@ class Game extends React.Component{
                     this.state.score += this.clear();
                     this.state.total++;
                     this.dropNew();
+                }else if(r && this.useAI){
+                    this.setState({
+                        data:this.state.data,
+                        active: this.state.active,
+                        total: this.state.total,
+                        score: this.state.score
+                    });
+                    this.refs.main.setState({
+                        data: this.state.data,
+                        active: this.state.active
+                    });
+                    this.refs.preview.setState({
+                        active: this.state.next
+                    });
+                    window.setTimeout( this.aiStep.bind(this), this.interval_ai);
+                    return;
                 }
                 break;
             case 0x26: // up
@@ -212,7 +237,9 @@ class Game extends React.Component{
     }
 
     dropNew(){
-
+        if(this.status <= 0){
+            return;
+        }
         let next = this.setPreviewPosition(Tetris.random());
         let active = this.state.next?this.setNewTertrisPosition(this.state.next):this.setNewTertrisPosition(Tetris.random());
 
@@ -230,11 +257,21 @@ class Game extends React.Component{
             active: active
         });
 
+        
         if(this.useAI){
-            if(this.timer_ai==null) this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
+            if(this.timer_ai==null){
+                this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
+                console.log('ai take a rest and will work after interval');
+            }else{
+                console.log('wait ai timer, will not create new timer');
+            }
         }else{
-            if(this.timer_input == null) this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+            if(this.timer_input == null){
+                this.timer_input = window.setTimeout(this.autoDrop.bind(this), this.interval_input);
+            } 
         }
+
+        
     }
 
 
@@ -284,6 +321,7 @@ class Game extends React.Component{
     }
 
     cleanUp(){
+        this.status = -1;
         this.state = {
             total:0,
             score: 0,
@@ -297,52 +335,26 @@ class Game extends React.Component{
         if(this.timer_ai) window.clearTimeout(this.timer_ai);
         if(this.timer_input) window.clearTimeout(this.timer_input);
         this.timer_ai = this.timer_input = null;
-
-        
-        if(this.state.total > this.weights.total && this.state.score > this.weights.score){
-            this.weights = {
-                ai: this.ai,
-                total: this.state.total,
-                score: this.state.score
-            };
-            console.log('New weights found score:'+this.state.score+", total:"+this.state.total+", ai:("+this.ai.alpha+","+this.ai.beta+","+this.ai.gama+","+this.ai.delta+")");
-        }
+        let state = this.state;
         this.cleanUp();
-        let quantity = Math.random() * 0.4 - 0.2;
-        switch( parseInt(Math.random()*4) ){
-            case 0:
-                this.ai.alpha += quantity;
-                break;
-            case 1:
-                this.ai.beta += quantity;
-                break;
-            case 2:
-                this.ai.gama += quantity;
-                break;
-            case 3:
-                this.ai.delta += quantity;
-                break;
+        if(this.props.onGameOver){
+            this.props.onGameOver.call(this, state);
         }
-        this.dropNew();
     }
 
     aiStep(){
+        if(this.timer_ai) window.clearTimeout(this.timer_ai);
         this.timer_ai = null;
         if(this.aiActions.length===0){
             this.aiActions = this.ai.think(this);
         }
 
-        if(this.aiActions.length){
-            let actions = [this.aiActions.shift()];
-
-            if(this.aiActions.length && actions[0] != 0x20 && this.aiActions[this.aiActions.length-1] == 0x20 ){
-                actions.push(this.aiActions.pop());
-            }
-            for(let i=0; i<actions.length; i++){
-                this.doAction(actions[i]);
-            }
+        let step = this.aiActions.shift();
+        if(step && step.code){
+            this.doAction(step.code);
         }
         
+
         if(this.aiActions.length > 0){
             this.timer_ai = window.setTimeout(this.aiStep.bind(this), this.interval_ai);
         }else{
@@ -369,9 +381,6 @@ class Game extends React.Component{
        }
     }
 
-    mode(event){
-        this.automation(event.target.value==="true");
-    }
 }
 
 export default Game;

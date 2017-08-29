@@ -32,6 +32,17 @@
             }
         }
     }
+}
+#GameContainer, #Training{
+    display: inline-block;
+}
 
-    
+#Training{
+    th{
+        width: 50%;
+    }
+
+    tr:nth-child(even){
+        background-color: #e3e4e5;
+    }
 }
