@@ -132,7 +132,6 @@ class GA extends React.Component{
             this.setState({
                 max:JSON.parse(JSON.stringify(this.seeds[0]))
             });
-            console.log('New best find: ', JSON.stringify(this.state.max));
         }
         let capacity = parseInt(this.seeds.length*0.6);
         this.seeds.length = capacity;
