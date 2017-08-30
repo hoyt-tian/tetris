@@ -34,10 +34,10 @@ class Game extends React.Component{
         this.useAI = props.aiSeed!=null;
         this.interval_ai = props.aiInterval || 200;
         let aiSeed = props.aiSeed || {
-            alpha:Math.random(), 
-            beta:Math.random(), 
-            gama:Math.random(), 
-            delta:Math.random()
+            alpha:0.14454541761156853, 
+            beta:-0.06266904571086948, 
+            gama:-0.13412844849297312, 
+            delta:-0.025127285656600856
         };
         
         this.ai = new AI(aiSeed.alpha, aiSeed.beta, aiSeed.gama, aiSeed.delta);
