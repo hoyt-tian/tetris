@@ -81,9 +81,9 @@ class Game extends React.Component{
                 </section>
                 <section className="links">
                     <ul>
-                        <li className={window.location.pathname==="/"||window.location.pathname==="/index.html"?"selected":""}><a href="index.html">Tetris</a></li>
-                        <li className={window.location.pathname==="/test.html"?"selected":""}><a href="test.html">单元测试</a></li>
-                        <li className={window.location.pathname==="/evolution.html"?"selected":""}><a href="evolution.html">AI训练</a></li>
+                        <li className={window.location.pathname.endsWith("/")||window.location.pathname.endsWith("/index.html")?"selected":""}><a href="index.html">Tetris</a></li>
+                        <li className={window.location.pathname.endsWith("/test.html")?"selected":""}><a href="test.html">单元测试</a></li>
+                        <li className={window.location.pathname.endsWith("/evolution.html")?"selected":""}><a href="evolution.html">AI训练</a></li>
                     </ul>
                 </section>
                 <section>
