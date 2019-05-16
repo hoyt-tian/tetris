@@ -5,6 +5,6 @@
 * 实现一个经典版本的俄罗斯方块游戏
 * 实现了俄罗斯方块的AI控制
 
-在线演示系统可参见 [http://open.hoyt-tian.com/Tetris/](http://open.hoyt-tian.com/tetris/)
+在线演示系统可参见 [http://open.hoyt-tian.com/tetris/](http://open.hoyt-tian.com/tetris/)
 
 更多实现细节可参见 [http://www.hoyt-tian.com/tag/tetris/](http://www.hoyt-tian.com/tag/tetris/)
